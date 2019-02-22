@@ -2,10 +2,14 @@
 
 A partial implementation of the [Opentracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
 
+
+[![homecomb-ui](https://user-images.githubusercontent.com/229881/53273403-ed56fd80-36c1-11e9-95b5-d5277bb621ff.png)](https://ui.honeycomb.io)
+
 ## Usage
 
 ```ts
 import { Tracer } from '@zeit/tracing-js';
+
 const tracer = new Tracer('service-name', {
   writeKey: process.env.HONEYCOMB_KEY,
   dataset: process.env.HONEYCOMB_DATASET
@@ -21,7 +25,6 @@ async function sleep(ms, parentSpan) {
         }, ms)
     );
 }
-
 
 // example parent function we wish to trace
 async function handler(req, res) {
