@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "An implementation of Opentracing API",
   "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
