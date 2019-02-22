@@ -1,15 +1,12 @@
 {
   "name": "@zeit/tracing-js",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "An implementation of Opentracing API",
   "main": "./dist/src/index.js",
-  "files:": [
-    "./dist/src/**"
-  ],
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test}/**/*.ts'",
+    "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types}/**/*.ts'",
     "test": "tape dist/test/**.js"
   },
   "author": "styfle",

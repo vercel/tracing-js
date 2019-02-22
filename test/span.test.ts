@@ -10,8 +10,6 @@ test('test span context', t => {
   const name = 'function name';
   const traceId = 'trace123';
   const event: HoneyEvent = {
-    timestamp: new Date(),
-    metadata: {},
     addField: noop,
     send: noop,
   };
@@ -21,6 +19,44 @@ test('test span context', t => {
   t.notEqual(ctx.toSpanId(), '');
 });
 
+test('test span setTag', t => {
+  t.plan(2);
+  const serviceName = 'service name';
+  const name = 'function name';
+  const traceId = 'trace123';
+  const event: HoneyEvent = {
+    addField: (key: string, value: any) => {
+      if (key === 'tag.key1') {
+        t.equal(value, 'value1');
+      } else if (key === 'tag.key2') {
+        t.equal(value, 'value2');
+      }
+    },
+    send: noop,
+  };
+  const span = new Span(event, serviceName, name, traceId);
+  span.setTag('key1', 'value1').setTag('key2', 'value2').finish();
+});
+
+test('test span addTags', t => {
+  t.plan(2);
+  const serviceName = 'service name';
+  const name = 'function name';
+  const traceId = 'trace123';
+  const event: HoneyEvent = {
+    addField: (key: string, value: any) => {
+      if (key === 'tag.key1') {
+        t.equal(value, 'value1');
+      } else if (key === 'tag.key2') {
+        t.equal(value, 'value2');
+      }
+    },
+    send: noop,
+  };
+  const span = new Span(event, serviceName, name, traceId);
+  span.addTags({ key1: 'value1', key2: 'value2' }).finish();
+});
+
 test('test span addField', t => {
   t.plan(7);
   const serviceName = 'service name';
@@ -28,8 +64,6 @@ test('test span addField', t => {
   const traceId = 'trace123';
   const parentId = 'parent123';
   const event: HoneyEvent = {
-    timestamp: new Date(),
-    metadata: {},
     addField: (key: string, value: any) => {
       switch (key) {
         case 'duration_ms':
@@ -53,7 +87,7 @@ test('test span addField', t => {
       }
     },
     send: () => {
-      t.true(event.timestamp > new Date(0));
+      t.true(event.timestamp && event.timestamp > new Date(0));
     },
   };
   const span = new Span(event, serviceName, name, traceId, parentId);

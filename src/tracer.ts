@@ -1,14 +1,7 @@
-import Libhoney from 'libhoney';
+import { TracerOptions, SpanOptions } from './shared';
 import { Span } from './span';
 import { SpanContext } from './span-context';
-import { HoneyOptions } from 'libhoney';
-
-interface SpanOptions {
-  childOf?: SpanContext | Span;
-  tags?: object;
-}
-
-type TracerOptions = HoneyOptions | Libhoney;
+import Libhoney from 'libhoney';
 
 export class Tracer {
   private hny: Libhoney;
@@ -23,7 +16,7 @@ export class Tracer {
     }
   }
   startSpan(name: string, spanOptions: SpanOptions = {}) {
-    const { childOf } = spanOptions;
+    const { childOf, tags } = spanOptions;
     let traceId: string | undefined;
     let parentId: string | undefined;
     if (childOf instanceof Span) {
@@ -41,6 +34,7 @@ export class Tracer {
       name,
       traceId,
       parentId,
+      tags,
     );
   }
 }

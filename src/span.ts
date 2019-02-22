@@ -1,6 +1,7 @@
 import { HoneyEvent } from 'libhoney';
 import { SpanContext } from './span-context';
 import { generateId } from './generate-id';
+import { SpanTags } from './shared';
 
 export class Span {
   private event: HoneyEvent;
@@ -8,6 +9,7 @@ export class Span {
   private name: string;
   private traceId: string;
   private parentId: string | undefined;
+  private tags: SpanTags = {};
   private spanId: string;
   private start: Date;
   private ctx: SpanContext;
@@ -18,6 +20,7 @@ export class Span {
     name: string,
     traceId = generateId(),
     parentId?: string,
+    tags?: SpanTags,
   ) {
     const spanId = generateId();
     this.event = event;
@@ -26,31 +29,29 @@ export class Span {
     this.traceId = traceId;
     this.spanId = spanId;
     this.parentId = parentId;
-    this.start = new Date();
-    console.log(
-      JSON.stringify({ serviceName, name, traceId, spanId, parentId }),
-    );
+    this.tags = tags || {};
     this.ctx = new SpanContext(traceId, spanId);
+    this.start = new Date();
   }
+
   context() {
     return this.ctx;
   }
-  setTag() {
-    // TODO: add metadata
+
+  addTags(tags: SpanTags) {
+    Object.keys(tags).forEach(key => {
+      this.tags[key] = tags[key];
+    });
+    return this;
   }
-  log() {
-    /// Timestamp→ UTC
-    // duration_ms
-    // meta.beeline_version
-    // meta.instrumentation_count
-    // meta.instrumentations
-    // meta.local_hostname
-    // meta.node_version
-    // name
-    // service_name
-    // trace.parent_id
-    // trace.span_id
-    // trace.trace_id
+
+  setTag(key: string, value: any) {
+    this.tags[key] = value;
+    return this;
+  }
+
+  setOperationName(name: string) {
+    this.name = name;
   }
 
   finish() {
@@ -61,6 +62,9 @@ export class Span {
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
+    for (const [key, value] of Object.entries(this.tags)) {
+      this.event.addField('tag.' + key, value);
+    }
     this.event.timestamp = this.start;
     this.event.send();
   }
