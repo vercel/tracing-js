@@ -35,7 +35,10 @@ test('test span setTag', t => {
     send: noop,
   };
   const span = new Span(event, serviceName, name, traceId);
-  span.setTag('key1', 'value1').setTag('key2', 'value2').finish();
+  span
+    .setTag('key1', 'value1')
+    .setTag('key2', 'value2')
+    .finish();
 });
 
 test('test span addTags', t => {
