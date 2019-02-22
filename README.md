@@ -1,6 +1,6 @@
 # <img src="https://cdn.jsdelivr.net/npm/octicons@8.4.2/build/svg/bug.svg" alt="bug" width="20" /> tracing-js 
 
-A partial implementation of the [Opentracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
+A partial implementation of the [OpenTracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
 
 
 [![homecomb-ui](https://user-images.githubusercontent.com/229881/53273403-ed56fd80-36c1-11e9-95b5-d5277bb621ff.png)](https://ui.honeycomb.io)
