@@ -5,7 +5,7 @@ A partial implementation of the [Opentracing JavaScript API](https://opentracing
 ## Usage
 
 ```ts
-import { Tracer } from '@zeit/tracing-js`;
+import { Tracer } from '@zeit/tracing-js';
 const tracer = new Tracer('service-name', {
   writeKey: process.env.HONEYCOMB_KEY,
   dataset: process.env.HONEYCOMB_DATASET
@@ -38,7 +38,11 @@ handler('req', 'res')
 
 ## Connecting traces across multiple services
 
-You can set a parent trace, even if you don't have a reference to the `Span` object. Instead, you can create a new `SpanContext`. You'll need the `parentTraceId` and `parentSpanId`.
+You can set a parent trace, even if you don't have a reference to the `Span` object.
+
+Instead, you can create a new `SpanContext`.
+
+You'll need the `parentTraceId` and `parentSpanId` (typically found in `req.headers`).
 
 ```ts
 const context = new SpanContext(parentTraceId, parentSpanId);
