@@ -20,7 +20,7 @@ export const SPAN_KIND_MESSAGING_CONSUMER = 'consumer';
 export const ERROR = 'error';
 
 /**
- * COMPONENT (string) ia s low-cardinality identifier of the module, library,
+ * COMPONENT (string) A low-cardinality identifier of the module, library,
  * or package that is generating a span.
  */
 export const COMPONENT = 'component';

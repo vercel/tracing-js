@@ -1,23 +1,31 @@
-import { TracerOptions, SpanOptions } from './shared';
+import {
+  TracerOptions,
+  TracerHoneyOptions,
+  SpanOptions,
+  SamplerBase,
+} from './shared';
 import { Span } from './span';
 import { SpanContext } from './span-context';
 import { SAMPLING_PRIORITY } from './tags';
 import Libhoney from 'libhoney';
+import { DeterministicSampler } from './deterministic-sampler';
 
 export class Tracer {
-  private hny: Libhoney;
+  private honey: Libhoney;
   private serviceName: string;
+  private sampler: SamplerBase;
 
-  constructor(serviceName: string, tracerOptions: TracerOptions) {
-    this.serviceName = serviceName;
-    if (tracerOptions instanceof Libhoney) {
-      this.hny = tracerOptions;
+  constructor(tracerOptions: TracerOptions, honeyOptions: TracerHoneyOptions) {
+    this.serviceName = tracerOptions.serviceName;
+    this.sampler = tracerOptions.sampler || new DeterministicSampler(1);
+    if (honeyOptions instanceof Libhoney) {
+      this.honey = honeyOptions;
     } else {
-      this.hny = new Libhoney(tracerOptions);
+      this.honey = new Libhoney(honeyOptions);
     }
   }
   startSpan(name: string, spanOptions: SpanOptions = {}) {
-    const { childOf, tags={} } = spanOptions;
+    const { childOf, tags = {} } = spanOptions;
     let traceId: string | undefined;
     let parentId: string | undefined;
     let samplingPriority: number | undefined;
@@ -41,12 +49,13 @@ export class Tracer {
     }
 
     return new Span(
-      this.hny.newEvent(),
+      this.honey.newEvent(),
       this.serviceName,
       name,
       traceId,
       parentId,
       tags,
+      this.sampler,
     );
   }
 }
