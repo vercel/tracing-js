@@ -2,29 +2,32 @@
 
 A partial implementation of the [OpenTracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
 
-
-[![homecomb-ui](https://user-images.githubusercontent.com/229881/53273403-ed56fd80-36c1-11e9-95b5-d5277bb621ff.png)](https://ui.honeycomb.io)
+[![homecomb-ui](https://user-images.githubusercontent.com/229881/53371218-a1a09000-391d-11e9-9956-8ee2b5d62a0f.png)](https://ui.honeycomb.io)
 
 ## Usage
 
 ```ts
-import micro from 'micro';
-import { Tracer, Tags, DeterministicSampler, SpanContext } from '@zeit/tracing-js';
+import { IncomingMessage, ServerResponse, createServer } from 'http';
+import { Tracer, SpanContext, Tags, DeterministicSampler } from '@zeit/tracing-js';
 
 const tracer = new Tracer(
   {
-    serviceName: 'service-name',
-    sampler: new DeterministicSampler(process.env.HONEYCOMB_SAMPLERATE),
+    serviceName: 'routing-example',
+    environment: process.env.ENVIRONMENT,
+    dc: process.env.DC,
+    podName: process.env.PODNAME,
+    hostName: process.env.HOSTNAME,
+    sampler: new DeterministicSampler(process.env.TRACE_SAMPLE_RATE),
   },
   {
-    writeKey: process.env.HONEYCOMB_KEY,
-    dataset: process.env.HONEYCOMB_DATASET,
+    writeKey: process.env.HONEYCOMB_KEY!,
+    dataset: process.env.HONEYCOMB_DATASET!,
   },
 );
 
 // example child function we wish to trace
-async function sleep(ms: number, parentSpan: any) {
-  const span = tracer.startSpan(sleep.name, { childOf: parentSpan });
+async function sleep(ms: number, childOf: SpanContext) {
+  const span = tracer.startSpan(sleep.name, { childOf });
   return new Promise(resolve =>
     setTimeout(() => {
       span.finish();
@@ -33,30 +36,75 @@ async function sleep(ms: number, parentSpan: any) {
   );
 }
 
+// example child function we wish to trace
+async function route(path: string, childOf: SpanContext) {
+  const span = tracer.startSpan(route.name, { childOf });
+  const spanContext = span.context();
+
+  await sleep(200, spanContext);
+
+  if (!path || path === '/') {
+    span.finish();
+    return 'Home page';
+  } else if (path === '/next') {
+    span.finish();
+    return 'Next page';
+  }
+
+  span.finish();
+  throw new Error('Page not found');
+}
+
 // example parent function we wish to trace
-async function handler(req: any, res: any) {
-  const tags = {};
-  if (req.headers && req.headers['x-now-trace-priority']) {
-    const priority = Number.parseInt(req.headers['x-now-trace-priority']);
-    tags[Tags.SAMPLING_PRIORITY] = priority;
-  }
-
-  let childOf: SpanContext | undefined;
-  if (req.headers && req.headers['x-now-id']) {
-    const traceId = req.headers['x-now-id'];
-    const parentId = req.headers['x-now-parent-id'];
-    childOf = new SpanContext(traceId, parentId, tags);
-  }
-
+async function handler(req: IncomingMessage, res: ServerResponse) {
+  const { tags, childOf } = parseRequest(req);
   const span = tracer.startSpan(handler.name, { tags, childOf });
+  const spanContext = span.context();
+  let statusCode = 200;
 
-  await sleep(300, span);
-  await sleep(300, span);
+  try {
+    const { url = '/' } = req;
+    await sleep(100, spanContext);
+    const output = await route(url, spanContext);
+    res.write(output);
+  } catch (error) {
+    statusCode = 500;
+    tags[Tags.ERROR] = true;
+    res.write(error.message);
+  }
 
+  tags[Tags.HTTP_STATUS_CODE] = statusCode;
+  res.statusCode = statusCode;
+  res.end();
   span.finish();
 }
 
-micro(handler).listen(3000);
+function getFirstHeader(req: IncomingMessage, key: string) {
+  const value = req.headers[key];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseRequest(req: IncomingMessage) {
+  const tags: { [key: string]: any } = {};
+  tags[Tags.HTTP_METHOD] = req.method;
+  tags[Tags.HTTP_URL] = req.url;
+
+  const priority = getFirstHeader(req, 'x-now-trace-priority');
+  if (typeof priority !== 'undefined') {
+    tags[Tags.SAMPLING_PRIORITY] = Number.parseInt(priority);
+  }
+
+  let childOf: SpanContext | undefined;
+  const traceId = getFirstHeader(req, 'x-now-id');
+  const parentId = getFirstHeader(req, 'x-now-parent-id');
+  if (traceId) {
+    childOf = new SpanContext(traceId, parentId, tags);
+  }
+
+  return { tags, childOf };
+}
+
+createServer(handler).listen(3000);
 ```
 
 ## Connecting traces across multiple services
@@ -65,10 +113,10 @@ You can set a parent trace, even if you don't have a reference to the `Span` obj
 
 Instead, you can create a new `SpanContext`.
 
-You'll need the `parentTraceId` and `parentSpanId` (typically found in `req.headers`).
+You'll need the `traceId` and `parentSpanId` (typically found in `req.headers`).
 
 ```ts
-const context = new SpanContext(parentTraceId, parentSpanId);
+const context = new SpanContext(traceId, parentSpanId);
 const childSpan = tracer.startSpan('child', { childOf: context });
 // ...do stuff like normal
 childSpan.finish();
