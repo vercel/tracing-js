@@ -23,6 +23,12 @@ test('deterministic sampler same result each time', t => {
   t.equal(first, second);
 });
 
+test('deterministic sampler allow 0%', t => {
+  t.plan(1);
+  const passed = testSampleRate(0, 1);
+  t.false(passed);
+});
+
 test('deterministic sampler allow 100%', t => {
   t.plan(1);
   const passed = testSampleRate(1, 1);

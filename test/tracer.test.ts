@@ -1,11 +1,14 @@
 import test from 'tape';
 import { Tracer } from '../src/tracer';
 import Libhoney, { HoneyEvent, HoneyOptions } from 'libhoney';
-import {SAMPLING_PRIORITY} from '../src/tags';
+import { SAMPLING_PRIORITY } from '../src/tags';
 
-function newDummyHoney(addField?: (key: string, value: any) => void) {
-  const noop = () => {};
+const noop = () => {};
 
+function newDummyHoney(
+  addField?: (key: string, value: any) => void,
+  send?: () => void,
+) {
   class DummyHoney extends Libhoney {
     constructor(options: HoneyOptions) {
       super(options);
@@ -13,7 +16,7 @@ function newDummyHoney(addField?: (key: string, value: any) => void) {
     newEvent(): HoneyEvent {
       return {
         addField: addField || noop,
-        send: noop,
+        send: send || noop,
       };
     }
   }
@@ -27,7 +30,7 @@ function newDummyHoney(addField?: (key: string, value: any) => void) {
 
 test('test tracer with no options', t => {
   t.plan(3);
-  const tracer = new Tracer('service name', newDummyHoney());
+  const tracer = new Tracer({ serviceName: 'service name' }, newDummyHoney());
   const span = tracer.startSpan('hello');
   const ctx = span.context();
   const traceId = ctx.toTraceId();
@@ -39,7 +42,7 @@ test('test tracer with no options', t => {
 
 test('test tracer traceId is same for parent & child', t => {
   t.plan(1);
-  const tracer = new Tracer('service name', newDummyHoney());
+  const tracer = new Tracer({ serviceName: 'service name' }, newDummyHoney());
   const parentSpan = tracer.startSpan('parent');
   const childSpan = tracer.startSpan('child', { childOf: parentSpan });
   t.equal(parentSpan.context().toTraceId(), childSpan.context().toTraceId());
@@ -47,9 +50,9 @@ test('test tracer traceId is same for parent & child', t => {
 
 test('test tracer sample priority is same for parent & child', t => {
   t.plan(2);
-  const tracer = new Tracer('service name', newDummyHoney());
+  const tracer = new Tracer({ serviceName: 'service name' }, newDummyHoney());
   const tags = { [SAMPLING_PRIORITY]: 75 };
-  const parentSpan = tracer.startSpan('parent', {tags});
+  const parentSpan = tracer.startSpan('parent', { tags });
   const childSpan = tracer.startSpan('child', { childOf: parentSpan });
   const parentPriority = parentSpan.context().getTag(SAMPLING_PRIORITY);
   const childPriority = childSpan.context().getTag(SAMPLING_PRIORITY);
@@ -66,7 +69,10 @@ test('test tracer tags', t => {
       t.equal(value, 'value2');
     }
   };
-  const tracer = new Tracer('service name', newDummyHoney(addField));
+  const tracer = new Tracer(
+    { serviceName: 'service name' },
+    newDummyHoney(addField),
+  );
   const tags = { key1: 'value1', key2: 'value2' };
   const span = tracer.startSpan('hello', { tags });
   span.finish();
