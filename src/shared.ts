@@ -5,6 +5,10 @@ import { HoneyOptions } from 'libhoney';
 
 export interface TracerOptions {
   serviceName: string;
+  environment?: string;
+  dc?: string;
+  podName?: string;
+  hostName?: string;
   sampler?: SamplerBase;
 }
 
