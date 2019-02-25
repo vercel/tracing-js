@@ -8,12 +8,8 @@ A partial implementation of the [OpenTracing JavaScript API](https://opentracing
 ## Usage
 
 ```ts
-import {
-  Tracer,
-  Tags,
-  DeterministicSampler,
-  SpanContext,
-} from '@zeit/tracing-js';
+import micro from 'micro';
+import { Tracer, Tags, DeterministicSampler, SpanContext } from '@zeit/tracing-js';
 
 const tracer = new Tracer(
   {
@@ -60,10 +56,7 @@ async function handler(req: any, res: any) {
   span.finish();
 }
 
-handler('req', 'res')
-  .then(() => console.log('done'))
-  .catch(e => console.error(e));
-
+micro(handler).listen(3000);
 ```
 
 ## Connecting traces across multiple services

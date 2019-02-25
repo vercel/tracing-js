@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
+    "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types}/**/*.ts'",
     "test": "tape dist/test/**.js"
   },
   "author": "styfle",
