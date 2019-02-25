@@ -9,10 +9,9 @@ export class Span {
   private name: string;
   private traceId: string;
   private parentId: string | undefined;
-  private tags: SpanTags = {};
+  private tags: SpanTags;
   private spanId: string;
   private start: Date;
-  private ctx: SpanContext;
 
   constructor(
     event: HoneyEvent,
@@ -30,12 +29,11 @@ export class Span {
     this.spanId = spanId;
     this.parentId = parentId;
     this.tags = tags || {};
-    this.ctx = new SpanContext(traceId, spanId);
     this.start = new Date();
   }
 
   context() {
-    return this.ctx;
+    return new SpanContext(this.traceId, this.spanId, this.tags);
   }
 
   addTags(tags: SpanTags) {

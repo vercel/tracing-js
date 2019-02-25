@@ -1,6 +1,7 @@
 import test from 'tape';
 import { Tracer } from '../src/tracer';
 import Libhoney, { HoneyEvent, HoneyOptions } from 'libhoney';
+import {SAMPLING_PRIORITY} from '../src/tags';
 
 function newDummyHoney(addField?: (key: string, value: any) => void) {
   const noop = () => {};
@@ -42,6 +43,18 @@ test('test tracer traceId is same for parent & child', t => {
   const parentSpan = tracer.startSpan('parent');
   const childSpan = tracer.startSpan('child', { childOf: parentSpan });
   t.equal(parentSpan.context().toTraceId(), childSpan.context().toTraceId());
+});
+
+test('test tracer sample priority is same for parent & child', t => {
+  t.plan(2);
+  const tracer = new Tracer('service name', newDummyHoney());
+  const tags = { [SAMPLING_PRIORITY]: 75 };
+  const parentSpan = tracer.startSpan('parent', {tags});
+  const childSpan = tracer.startSpan('child', { childOf: parentSpan });
+  const parentPriority = parentSpan.context().getTag(SAMPLING_PRIORITY);
+  const childPriority = childSpan.context().getTag(SAMPLING_PRIORITY);
+  t.equal(parentPriority, 75);
+  t.equal(childPriority, 75);
 });
 
 test('test tracer tags', t => {
