@@ -37,7 +37,7 @@ test('deterministic sampler allow 100%', t => {
 
 test('deterministic sampler allow 50%', t => {
   t.plan(1);
-  const passed = testSampleRate(2, 0.1);
+  const passed = testSampleRate(2, 0.2);
   t.true(passed, 'this test may not always pass due to random inputs');
 });
 
