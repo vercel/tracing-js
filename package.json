@@ -1,6 +1,6 @@
 {
   "name": "@zeit/tracing-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A partial implementation of the Opentracing JavaScript API for honeycomb.io backend",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.js",
