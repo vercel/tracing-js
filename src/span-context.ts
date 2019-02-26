@@ -1,5 +1,4 @@
 import { SpanTags } from './shared';
-import { generateId } from './generate-id';
 
 export class SpanContext {
   constructor(
@@ -8,7 +7,7 @@ export class SpanContext {
     private tags: SpanTags,
   ) {
     this.traceId = traceId;
-    this.spanId = spanId || generateId();
+    this.spanId = spanId;
     this.tags = tags;
   }
   toSpanId() {
