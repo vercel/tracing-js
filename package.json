@@ -10,6 +10,7 @@
     "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
     "test": "tape dist/test/**.js"
   },
+  "repository": "github:zeit/tracing-js",
   "author": "styfle",
   "license": "MIT",
   "devDependencies": {
