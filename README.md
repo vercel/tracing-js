@@ -91,3 +91,5 @@ async function handler(req: IncomingMessage, res: ServerResponse) {
   res.write(output);
 }
 ```
+
+See a complete example of multi-service tracing in the [examples](https://github.com/zeit/tracing-js/tree/master/examples) directory.
