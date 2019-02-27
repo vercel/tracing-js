@@ -15,6 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^11.9.4",
+    "@types/node-fetch": "^2.1.6",
     "@types/tape": "^4.2.33",
     "prettier": "^1.16.4",
     "tape": "^4.10.1",
@@ -22,5 +23,8 @@
   },
   "dependencies": {
     "libhoney": "^1.2.1"
+  },
+  "peerDependencies": {
+    "node-fetch": "*"
   }
 }
