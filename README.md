@@ -8,12 +8,11 @@ A partial implementation of the [OpenTracing JavaScript API](https://opentracing
 
 ```ts
 import micro from 'micro';
-import { IncomingMessage, ServerResponse, createServer } from 'http';
-import { Tracer, SpanContext, Tags, DeterministicSampler } from '@zeit/tracing-js';
+import { Tracer, SpanContext, DeterministicSampler } from '@zeit/tracing-js';
 
 const tracer = new Tracer(
   {
-    serviceName: 'routing-example',
+    serviceName: 'my-first-service',
     environment: process.env.ENVIRONMENT,
     dc: process.env.DC,
     podName: process.env.PODNAME,
@@ -40,7 +39,6 @@ async function sleep(ms: number, childOf: SpanContext) {
 // example child function we wish to trace
 async function route(path: string, childOf: SpanContext) {
   const span = tracer.startSpan(route.name, { childOf });
-
   await sleep(200, span.context());
 
   if (!path || path === '/') {
@@ -49,30 +47,19 @@ async function route(path: string, childOf: SpanContext) {
   } else if (path === '/next') {
     span.finish();
     return 'Next page';
+  } else {
+    span.finish();
+    throw new Error('Page not found');
   }
-
-  span.finish();
-  throw new Error('Page not found');
 }
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
   const span = tracer.startSpan(handler.name);
   const spanContext = span.context();
-  let statusCode = 200;
-
-  try {
-    const { url = '/' } = req;
-    await sleep(100, spanContext);
-    const output = await route(url, spanContext);
-    res.write(output);
-  } catch (error) {
-    statusCode = 500;
-    span.setTag(Tags.ERROR, true);
-    res.write(error.message);
-  }
-  res.statusCode = statusCode;
-  res.end();
+  await sleep(100, spanContext);
+  const output = await route(req.url, spanContext);
+  res.end(output);
   span.finish();
 }
 
@@ -88,8 +75,19 @@ Instead, you can create a new `SpanContext`.
 You'll need the `traceId` and `parentSpanId` (typically found in `req.headers`).
 
 ```ts
-const context = new SpanContext(traceId, parentSpanId);
-const childSpan = tracer.startSpan('child', { childOf: context });
+const spanContext = new SpanContext(traceId, parentSpanId);
+const childSpan = tracer.startSpan('child', { childOf: spanContext });
 // ...do stuff like normal
 childSpan.finish();
+```
+
+But a better solution is to use the `setupHttpTracing` helper function like the following:
+
+```ts
+async function handler(req: IncomingMessage, res: ServerResponse) {
+  const { spanContext, fetch } = setupHttpTracing(tracer, req, res);
+  await sleep(100, spanContext);
+  const output = await fetch(upstreamUrl);
+  res.write(output);
+}
 ```
