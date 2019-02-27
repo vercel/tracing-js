@@ -13,6 +13,9 @@
   "repository": "github:zeit/tracing-js",
   "author": "styfle",
   "license": "MIT",
+  "engines": {
+    "node" : ">=8"
+  },
   "devDependencies": {
     "@types/node": "^11.9.4",
     "@types/node-fetch": "^2.1.6",
