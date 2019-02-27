@@ -7,6 +7,7 @@ A partial implementation of the [OpenTracing JavaScript API](https://opentracing
 ## Usage
 
 ```ts
+import micro from 'micro';
 import { IncomingMessage, ServerResponse, createServer } from 'http';
 import { Tracer, SpanContext, Tags, DeterministicSampler } from '@zeit/tracing-js';
 
@@ -39,9 +40,8 @@ async function sleep(ms: number, childOf: SpanContext) {
 // example child function we wish to trace
 async function route(path: string, childOf: SpanContext) {
   const span = tracer.startSpan(route.name, { childOf });
-  const spanContext = span.context();
 
-  await sleep(200, spanContext);
+  await sleep(200, span.context());
 
   if (!path || path === '/') {
     span.finish();
@@ -57,8 +57,7 @@ async function route(path: string, childOf: SpanContext) {
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { tags, childOf } = parseRequest(req);
-  const span = tracer.startSpan(handler.name, { tags, childOf });
+  const span = tracer.startSpan(handler.name);
   const spanContext = span.context();
   let statusCode = 200;
 
@@ -69,42 +68,15 @@ async function handler(req: IncomingMessage, res: ServerResponse) {
     res.write(output);
   } catch (error) {
     statusCode = 500;
-    tags[Tags.ERROR] = true;
+    span.setTag(Tags.ERROR, true);
     res.write(error.message);
   }
-
-  tags[Tags.HTTP_STATUS_CODE] = statusCode;
   res.statusCode = statusCode;
   res.end();
   span.finish();
 }
 
-function getFirstHeader(req: IncomingMessage, key: string) {
-  const value = req.headers[key];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parseRequest(req: IncomingMessage) {
-  const tags: { [key: string]: any } = {};
-  tags[Tags.HTTP_METHOD] = req.method;
-  tags[Tags.HTTP_URL] = req.url;
-
-  const priority = getFirstHeader(req, 'x-now-trace-priority');
-  if (typeof priority !== 'undefined') {
-    tags[Tags.SAMPLING_PRIORITY] = Number.parseInt(priority);
-  }
-
-  let childOf: SpanContext | undefined;
-  const traceId = getFirstHeader(req, 'x-now-id');
-  const parentId = getFirstHeader(req, 'x-now-parent-id');
-  if (traceId) {
-    childOf = new SpanContext(traceId, parentId, tags);
-  }
-
-  return { tags, childOf };
-}
-
-createServer(handler).listen(3000);
+micro(handler).listen(3000);
 ```
 
 ## Connecting traces across multiple services
