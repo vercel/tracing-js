@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { SpanContext } from './span-context';
 import * as Tags from './tags';
-import * as Hdr from './headers';
+import * as Hdrs from './headers';
 import { Tracer } from './tracer';
 import { SpanOptions, SpanTags } from './shared';
 import FetchTemp, { Request, RequestInit, Headers } from 'node-fetch';
@@ -41,14 +41,14 @@ function getSpanOptions(req: IncomingMessage) {
   tags[Tags.HTTP_METHOD] = req.method;
   tags[Tags.HTTP_URL] = req.url;
 
-  const priority = getFirstHeader(req, Hdr.SAMPLING_PRIORITY);
+  const priority = getFirstHeader(req, Hdrs.PRIORITY);
   if (typeof priority !== 'undefined') {
     tags[Tags.SAMPLING_PRIORITY] = Number.parseInt(priority);
   }
 
   let childOf: SpanContext | undefined;
-  const traceId = getFirstHeader(req, Hdr.TRACE_ID);
-  const parentId = getFirstHeader(req, Hdr.PARENT_ID);
+  const traceId = getFirstHeader(req, Hdrs.TRACE_ID);
+  const parentId = getFirstHeader(req, Hdrs.PARENT_ID);
   if (traceId) {
     childOf = new SpanContext(traceId, parentId, tags);
   }
@@ -74,8 +74,18 @@ function setupFetch(fetch: Fetch | undefined, spanContext: SpanContext) {
         ? opts.headers
         : new Headers(opts.headers as any);
 
-    headers.set(Hdr.TRACE_ID, spanContext.toTraceId());
-    headers.set(Hdr.PARENT_ID, spanContext.toSpanId() || '');
+    const traceId = spanContext.toTraceId();
+    const parentId = spanContext.toSpanId();
+    const priority = spanContext.getTag(Tags.SAMPLING_PRIORITY);
+
+    headers.set(Hdrs.TRACE_ID, traceId);
+    if (typeof parentId !== 'undefined') {
+      headers.set(Hdrs.PARENT_ID, parentId);
+    }
+    if (typeof priority !== 'undefined') {
+      headers.set(Hdrs.PRIORITY, priority);
+    }
+
     return fetchOriginal(url, opts);
   }
 
