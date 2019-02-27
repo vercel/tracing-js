@@ -1,4 +1,4 @@
-export const generateId = (bytes = 64) =>
+export const generateId = (bytes = 32) =>
   range(bytes)
     .map(getRandomByte)
     .map(toHex)
