@@ -57,19 +57,18 @@ async function route(path: string, childOf: SpanContext) {
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
   const { spanContext, fetch } = setupHttpTracing(tracer, req, res);
+  console.log(spanContext.toTraceId(), spanContext.toSpanId());
   let statusCode = 200;
 
   try {
     const { url = '/' } = req;
     await sleep(100, spanContext);
     const title = await route(url, spanContext);
-    const response = await fetch('https://zeit.co/blog');
-    const html = await response.text();
-    html.replace(
-      '<h1 class="jsx-2443601501 title">Blog</h1>',
-      `<h1 class="jsx-2443601501 title">${title}</h1>`,
-    );
-    res.write(html);
+    const response = await fetch('http://localhost:8080');
+    const data = await response.json();
+    data.title = title;
+    res.setHeader('Content-Type', 'application/json');
+    res.write(JSON.stringify(data));
   } catch (error) {
     statusCode = 500;
     res.write(error.message);
