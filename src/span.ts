@@ -1,37 +1,34 @@
 import { HoneyEvent } from 'libhoney';
 import { SpanContext } from './span-context';
 import { generateId } from './generate-id';
-import { SpanTags, SamplerBase } from './shared';
+import { SpanTags, TracerOptions } from './shared';
 import { SAMPLING_PRIORITY } from './tags';
 
 export class Span {
   private spanId: string;
   private event: HoneyEvent;
-  private serviceName: string;
+  private tracerOptions: TracerOptions;
   private name: string;
   private traceId: string;
   private parentId: string | undefined;
   private tags: SpanTags;
-  private sampler: SamplerBase;
   private start: Date;
 
   constructor(
     event: HoneyEvent,
-    serviceName: string,
+    tracerOptions: TracerOptions,
     name: string,
     traceId: string | undefined,
     parentId: string | undefined,
     tags: SpanTags,
-    sampler: SamplerBase,
   ) {
     this.spanId = generateId();
     this.event = event;
+    this.tracerOptions = tracerOptions;
     this.name = name;
-    this.serviceName = serviceName;
     this.traceId = traceId || generateId();
     this.parentId = parentId;
     this.tags = tags;
-    this.sampler = sampler;
     this.start = new Date();
   }
 
@@ -57,9 +54,10 @@ export class Span {
 
   private isSendable() {
     const priority = this.tags[SAMPLING_PRIORITY];
+    const { sampler } = this.tracerOptions;
 
-    if (typeof priority === 'undefined') {
-      return this.sampler.sample(this.traceId);
+    if (typeof priority === 'undefined' && sampler) {
+      return sampler.sample(this.traceId);
     }
 
     return priority > 0;
@@ -71,9 +69,20 @@ export class Span {
     }
 
     const duration = Date.now() - this.start.getTime();
+    const {
+      serviceName,
+      environment,
+      dc,
+      podName,
+      hostName,
+    } = this.tracerOptions;
     this.event.addField('duration_ms', duration);
     this.event.addField('name', this.name);
-    this.event.addField('service_name', this.serviceName);
+    this.event.addField('service_name', serviceName);
+    this.event.addField('environment', environment);
+    this.event.addField('dc', dc);
+    this.event.addField('pod_name', podName);
+    this.event.addField('host_name', hostName);
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
