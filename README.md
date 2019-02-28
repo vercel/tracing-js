@@ -7,12 +7,12 @@ A partial implementation of the [OpenTracing JavaScript API](https://opentracing
 ## Usage
 
 ```ts
-import { IncomingMessage, ServerResponse, createServer } from 'http';
-import { Tracer, SpanContext, Tags, DeterministicSampler } from '@zeit/tracing-js';
+import micro from 'micro';
+import { Tracer, SpanContext, DeterministicSampler } from '@zeit/tracing-js';
 
 const tracer = new Tracer(
   {
-    serviceName: 'routing-example',
+    serviceName: 'my-first-service',
     environment: process.env.ENVIRONMENT,
     dc: process.env.DC,
     podName: process.env.PODNAME,
@@ -39,9 +39,7 @@ async function sleep(ms: number, childOf: SpanContext) {
 // example child function we wish to trace
 async function route(path: string, childOf: SpanContext) {
   const span = tracer.startSpan(route.name, { childOf });
-  const spanContext = span.context();
-
-  await sleep(200, spanContext);
+  await sleep(200, span.context());
 
   if (!path || path === '/') {
     span.finish();
@@ -49,62 +47,23 @@ async function route(path: string, childOf: SpanContext) {
   } else if (path === '/next') {
     span.finish();
     return 'Next page';
+  } else {
+    span.finish();
+    throw new Error('Page not found');
   }
-
-  span.finish();
-  throw new Error('Page not found');
 }
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { tags, childOf } = parseRequest(req);
-  const span = tracer.startSpan(handler.name, { tags, childOf });
+  const span = tracer.startSpan(handler.name);
   const spanContext = span.context();
-  let statusCode = 200;
-
-  try {
-    const { url = '/' } = req;
-    await sleep(100, spanContext);
-    const output = await route(url, spanContext);
-    res.write(output);
-  } catch (error) {
-    statusCode = 500;
-    tags[Tags.ERROR] = true;
-    res.write(error.message);
-  }
-
-  tags[Tags.HTTP_STATUS_CODE] = statusCode;
-  res.statusCode = statusCode;
-  res.end();
+  await sleep(100, spanContext);
+  const output = await route(req.url, spanContext);
+  res.end(output);
   span.finish();
 }
 
-function getFirstHeader(req: IncomingMessage, key: string) {
-  const value = req.headers[key];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parseRequest(req: IncomingMessage) {
-  const tags: { [key: string]: any } = {};
-  tags[Tags.HTTP_METHOD] = req.method;
-  tags[Tags.HTTP_URL] = req.url;
-
-  const priority = getFirstHeader(req, 'x-now-trace-priority');
-  if (typeof priority !== 'undefined') {
-    tags[Tags.SAMPLING_PRIORITY] = Number.parseInt(priority);
-  }
-
-  let childOf: SpanContext | undefined;
-  const traceId = getFirstHeader(req, 'x-now-id');
-  const parentId = getFirstHeader(req, 'x-now-parent-id');
-  if (traceId) {
-    childOf = new SpanContext(traceId, parentId, tags);
-  }
-
-  return { tags, childOf };
-}
-
-createServer(handler).listen(3000);
+micro(handler).listen(3000);
 ```
 
 ## Connecting traces across multiple services
@@ -116,8 +75,21 @@ Instead, you can create a new `SpanContext`.
 You'll need the `traceId` and `parentSpanId` (typically found in `req.headers`).
 
 ```ts
-const context = new SpanContext(traceId, parentSpanId);
-const childSpan = tracer.startSpan('child', { childOf: context });
+const spanContext = new SpanContext(traceId, parentSpanId);
+const childSpan = tracer.startSpan('child', { childOf: spanContext });
 // ...do stuff like normal
 childSpan.finish();
 ```
+
+But a better solution is to use the `setupHttpTracing` helper function like the following:
+
+```ts
+async function handler(req: IncomingMessage, res: ServerResponse) {
+  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
+  await sleep(100, spanContext);
+  const output = await fetch(upstreamUrl);
+  res.write(output);
+}
+```
+
+See a complete example of multi-service tracing in the [examples](https://github.com/zeit/tracing-js/tree/master/examples) directory.

@@ -16,4 +16,8 @@ const getRandomByte = () =>
     .map(getRandomBit)
     .reduce(concatenateBits);
 
-const toHex = (n: number) => n.toString(16).toUpperCase().padStart(2, '0');
+const toHex = (n: number) =>
+  n
+    .toString(16)
+    .toUpperCase()
+    .padStart(2, '0');

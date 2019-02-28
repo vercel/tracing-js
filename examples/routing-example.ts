@@ -1,5 +1,10 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
-import { Tracer, SpanContext, Tags, DeterministicSampler } from '../src/index';
+import {
+  Tracer,
+  SpanContext,
+  DeterministicSampler,
+  setupHttpTracing,
+} from '../src/index';
 
 const tracer = new Tracer(
   {
@@ -39,7 +44,10 @@ async function route(path: string, childOf: SpanContext) {
     return 'Home page';
   } else if (path === '/next') {
     span.finish();
-    return 'Next page';
+    return 'Next Page';
+  } else if (path === '/another') {
+    span.finish();
+    return 'Another Page';
   }
 
   span.finish();
@@ -48,51 +56,26 @@ async function route(path: string, childOf: SpanContext) {
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { tags, childOf } = parseRequest(req);
-  const span = tracer.startSpan(handler.name, { tags, childOf });
-  const spanContext = span.context();
+  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
+  console.log(spanContext.toTraceId(), spanContext.toSpanId());
   let statusCode = 200;
 
   try {
     const { url = '/' } = req;
     await sleep(100, spanContext);
-    const output = await route(url, spanContext);
-    res.write(output);
+    const title = await route(url, spanContext);
+    const response = await fetch('http://localhost:8080');
+    const data = await response.json();
+    data.title = title;
+    res.setHeader('Content-Type', 'application/json');
+    res.write(JSON.stringify(data));
   } catch (error) {
     statusCode = 500;
-    tags[Tags.ERROR] = true;
     res.write(error.message);
   }
 
-  tags[Tags.HTTP_STATUS_CODE] = statusCode;
   res.statusCode = statusCode;
   res.end();
-  span.finish();
-}
-
-function getFirstHeader(req: IncomingMessage, key: string) {
-  const value = req.headers[key];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parseRequest(req: IncomingMessage) {
-  const tags: { [key: string]: any } = {};
-  tags[Tags.HTTP_METHOD] = req.method;
-  tags[Tags.HTTP_URL] = req.url;
-
-  const priority = getFirstHeader(req, 'x-now-trace-priority');
-  if (typeof priority !== 'undefined') {
-    tags[Tags.SAMPLING_PRIORITY] = Number.parseInt(priority);
-  }
-
-  let childOf: SpanContext | undefined;
-  const traceId = getFirstHeader(req, 'x-now-id');
-  const parentId = getFirstHeader(req, 'x-now-parent-id');
-  if (traceId) {
-    childOf = new SpanContext(traceId, parentId, tags);
-  }
-
-  return { tags, childOf };
 }
 
 createServer(handler).listen(3000);
