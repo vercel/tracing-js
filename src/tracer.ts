@@ -1,9 +1,4 @@
-import {
-  TracerOptions,
-  TracerHoneyOptions,
-  SpanOptions,
-  SamplerBase,
-} from './shared';
+import { TracerOptions, TracerHoneyOptions, SpanOptions } from './shared';
 import { Span } from './span';
 import { SpanContext } from './span-context';
 import { SAMPLING_PRIORITY } from './tags';
@@ -12,12 +7,12 @@ import { DeterministicSampler } from './deterministic-sampler';
 
 export class Tracer {
   private honey: Libhoney;
-  private serviceName: string;
-  private sampler: SamplerBase;
+  private tracerOptions: TracerOptions;
 
   constructor(tracerOptions: TracerOptions, honeyOptions: TracerHoneyOptions) {
-    this.serviceName = tracerOptions.serviceName;
-    this.sampler = tracerOptions.sampler || new DeterministicSampler(1);
+    this.tracerOptions = tracerOptions;
+    this.tracerOptions.sampler =
+      tracerOptions.sampler || new DeterministicSampler(1);
     if (honeyOptions instanceof Libhoney) {
       this.honey = honeyOptions;
     } else {
@@ -50,12 +45,11 @@ export class Tracer {
 
     return new Span(
       this.honey.newEvent(),
-      this.serviceName,
+      this.tracerOptions,
       name,
       traceId,
       parentId,
       tags,
-      this.sampler,
     );
   }
 }
