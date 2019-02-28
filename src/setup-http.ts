@@ -7,14 +7,18 @@ import { SpanOptions, SpanTags } from './shared';
 import FetchTemp, { Request, RequestInit, Headers } from 'node-fetch';
 type Fetch = typeof FetchTemp;
 
-export function setupHttpTracing(
-  tracer: Tracer,
-  req: IncomingMessage,
-  res: ServerResponse,
-  fetch?: Fetch,
-) {
+interface SetupHttpTracingOptions {
+  name?: string;
+  tracer: Tracer;
+  req: IncomingMessage;
+  res: ServerResponse;
+  fetch?: Fetch;
+}
+
+export function setupHttpTracing(options: SetupHttpTracingOptions) {
+  const { name = 'setupHttpTracing', tracer, req, res, fetch } = options;
   const spanOptions = getSpanOptions(req);
-  const span = tracer.startSpan('top', spanOptions);
+  const span = tracer.startSpan(name, spanOptions);
   const spanContext = span.context();
 
   res.on('finish', () => {
@@ -26,9 +30,9 @@ export function setupHttpTracing(
     span.finish();
   });
 
-  fetch = setupFetch(fetch, spanContext);
+  const fetchTracing = setupFetch(fetch, spanContext);
 
-  return { spanContext, fetch };
+  return { spanContext, fetch: fetchTracing };
 }
 
 function getFirstHeader(req: IncomingMessage, key: string) {

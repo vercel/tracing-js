@@ -85,7 +85,7 @@ But a better solution is to use the `setupHttpTracing` helper function like the 
 
 ```ts
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { spanContext, fetch } = setupHttpTracing(tracer, req, res);
+  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
   await sleep(100, spanContext);
   const output = await fetch(upstreamUrl);
   res.write(output);

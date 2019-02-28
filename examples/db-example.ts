@@ -34,7 +34,7 @@ async function getDocumentById(ms: number, childOf: SpanContext) {
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { spanContext } = setupHttpTracing(tracer, req, res);
+  const { spanContext } = setupHttpTracing({ tracer, req, res });
   console.log(spanContext.toTraceId(), spanContext.toSpanId());
   let statusCode: number;
   let data: any;

@@ -56,7 +56,7 @@ async function route(path: string, childOf: SpanContext) {
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { spanContext, fetch } = setupHttpTracing(tracer, req, res);
+  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
   console.log(spanContext.toTraceId(), spanContext.toSpanId());
   let statusCode = 200;
 
