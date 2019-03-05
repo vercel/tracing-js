@@ -74,7 +74,7 @@ export class Span {
       environment,
       dc,
       podName,
-      hostName,
+      nodeName,
     } = this.tracerOptions;
     this.event.addField('duration_ms', duration);
     this.event.addField('name', this.name);
@@ -82,7 +82,7 @@ export class Span {
     this.event.addField('environment', environment);
     this.event.addField('dc', dc);
     this.event.addField('pod_name', podName);
-    this.event.addField('host_name', hostName);
+    this.event.addField('node_name', nodeName);
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
