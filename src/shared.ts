@@ -23,3 +23,14 @@ export interface SpanOptions {
 export interface SamplerBase {
   sample(data: string): boolean;
 }
+
+export interface HttpRequest {
+  headers: { [header: string]: string | string[] | undefined };
+  method?: string;
+  url?: string;
+}
+
+export interface HttpResponse {
+  statusCode: number;
+  on(event: string, listener: () => void): this;
+}

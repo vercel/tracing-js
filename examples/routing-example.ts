@@ -4,7 +4,10 @@ import {
   SpanContext,
   DeterministicSampler,
   setupHttpTracing,
+  setupFetchTracing,
 } from '../src/index';
+
+import nodeFetch from 'node-fetch';
 
 const tracer = new Tracer(
   {
@@ -56,7 +59,8 @@ async function route(path: string, childOf: SpanContext) {
 
 // example parent function we wish to trace
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
+  const spanContext = setupHttpTracing({ tracer, req, res });
+  const fetch = setupFetchTracing({ spanContext, fetch: nodeFetch });
   console.log(spanContext.toTraceId(), spanContext.toSpanId());
   let statusCode = 200;
 

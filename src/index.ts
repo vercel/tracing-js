@@ -4,6 +4,7 @@ import * as Tags from './tags';
 import { DeterministicSampler } from './deterministic-sampler';
 import { SamplerBase } from './shared';
 import { setupHttpTracing } from './setup-http';
+import { setupFetchTracing } from './setup-fetch';
 
 export {
   Tracer,
@@ -12,4 +13,5 @@ export {
   DeterministicSampler,
   SamplerBase,
   setupHttpTracing,
+  setupFetchTracing,
 };

@@ -1,22 +1,18 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import { SpanContext } from './span-context';
 import * as Tags from './tags';
 import * as Hdrs from './headers';
 import { Tracer } from './tracer';
-import { SpanOptions, SpanTags } from './shared';
-import FetchTemp, { Request, RequestInit, Headers } from 'node-fetch';
-type Fetch = typeof FetchTemp;
+import { SpanOptions, SpanTags, HttpRequest, HttpResponse } from './shared';
 
 interface SetupHttpTracingOptions {
   name?: string;
   tracer: Tracer;
-  req: IncomingMessage;
-  res: ServerResponse;
-  fetch?: Fetch;
+  req: HttpRequest;
+  res: HttpResponse;
 }
 
 export function setupHttpTracing(options: SetupHttpTracingOptions) {
-  const { name = 'setupHttpTracing', tracer, req, res, fetch } = options;
+  const { name = 'setupHttpTracing', tracer, req, res } = options;
   const spanOptions = getSpanOptions(req);
   const span = tracer.startSpan(name, spanOptions);
   const spanContext = span.context();
@@ -30,17 +26,15 @@ export function setupHttpTracing(options: SetupHttpTracingOptions) {
     span.finish();
   });
 
-  const fetchTracing = setupFetch(fetch, spanContext);
-
-  return { spanContext, fetch: fetchTracing };
+  return spanContext;
 }
 
-function getFirstHeader(req: IncomingMessage, key: string) {
+function getFirstHeader(req: HttpRequest, key: string): string | undefined {
   const value = req.headers[key];
   return Array.isArray(value) ? value[0] : value;
 }
 
-function getSpanOptions(req: IncomingMessage) {
+function getSpanOptions(req: HttpRequest): SpanOptions {
   const tags: SpanTags = {};
   tags[Tags.HTTP_METHOD] = req.method;
   tags[Tags.HTTP_URL] = req.url;
@@ -57,52 +51,5 @@ function getSpanOptions(req: IncomingMessage) {
     childOf = new SpanContext(traceId, parentId, tags);
   }
 
-  const options: SpanOptions = { tags, childOf };
-  return options;
-}
-
-function setupFetch(fetch: Fetch | undefined, spanContext: SpanContext) {
-  let fetchOriginal: Fetch;
-  if (fetch) {
-    fetchOriginal = fetch;
-  } else {
-    fetchOriginal = require('node-fetch');
-  }
-
-  function fetchTracing(url: string | Request, opts?: RequestInit) {
-    if (!opts) {
-      opts = { headers: new Headers() };
-    }
-    const headers =
-      opts.headers instanceof Headers
-        ? opts.headers
-        : new Headers(opts.headers as any);
-
-    const traceId = spanContext.toTraceId();
-    const parentId = spanContext.toSpanId();
-    const priority = spanContext.getTag(Tags.SAMPLING_PRIORITY);
-
-    headers.set(Hdrs.TRACE_ID, traceId);
-    if (typeof parentId !== 'undefined') {
-      headers.set(Hdrs.PARENT_ID, parentId);
-    }
-    if (typeof priority !== 'undefined') {
-      headers.set(Hdrs.PRIORITY, priority);
-    }
-
-    return fetchOriginal(url, opts);
-  }
-
-  fetchTracing.default = fetchTracing;
-  fetchTracing.isRedirect = fetchOriginal.isRedirect;
-
-  // TS doesn't know about decorated runtime data
-  // so we copy from the original just to be safe.
-  for (const key of Object.keys(fetchOriginal)) {
-    const tracing = fetchTracing as any;
-    const original = fetchOriginal as any;
-    tracing[key] = original[key];
-  }
-
-  return fetchTracing;
+  return { tags, childOf };
 }
