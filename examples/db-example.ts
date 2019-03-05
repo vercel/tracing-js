@@ -11,8 +11,8 @@ const tracer = new Tracer(
     serviceName: 'db-example',
     environment: process.env.ENVIRONMENT,
     dc: process.env.DC,
-    podName: process.env.PODNAME,
-    hostName: process.env.HOSTNAME,
+    podName: process.env.POD_NAME,
+    nodeName: process.env.NODE_NAME,
     sampler: new DeterministicSampler(process.env.TRACE_SAMPLE_RATE),
   },
   {

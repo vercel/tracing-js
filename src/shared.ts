@@ -8,7 +8,7 @@ export interface TracerOptions {
   environment?: string;
   dc?: string;
   podName?: string;
-  hostName?: string;
+  nodeName?: string;
   sampler?: SamplerBase;
 }
 

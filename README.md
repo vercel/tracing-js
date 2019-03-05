@@ -15,8 +15,8 @@ const tracer = new Tracer(
     serviceName: 'my-first-service',
     environment: process.env.ENVIRONMENT,
     dc: process.env.DC,
-    podName: process.env.PODNAME,
-    hostName: process.env.HOSTNAME,
+    podName: process.env.POD_NAME,
+    nodeName: process.env.NODE_NAME,
     sampler: new DeterministicSampler(process.env.TRACE_SAMPLE_RATE),
   },
   {
@@ -85,7 +85,8 @@ But a better solution is to use the `setupHttpTracing` helper function like the 
 
 ```ts
 async function handler(req: IncomingMessage, res: ServerResponse) {
-  const { spanContext, fetch } = setupHttpTracing({ tracer, req, res });
+  const spanContext = setupHttpTracing({ tracer, req, res });
+  const fetch = setupFetchTracing({ spanContext });
   await sleep(100, spanContext);
   const output = await fetch(upstreamUrl);
   res.write(output);
