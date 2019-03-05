@@ -1,32 +1,7 @@
 import test from 'tape';
 import { Tracer } from '../src/tracer';
-import Libhoney, { HoneyEvent, HoneyOptions } from 'libhoney';
 import { SAMPLING_PRIORITY } from '../src/tags';
-
-const noop = () => {};
-
-function newDummyHoney(
-  addField?: (key: string, value: any) => void,
-  send?: () => void,
-) {
-  class DummyHoney extends Libhoney {
-    constructor(options: HoneyOptions) {
-      super(options);
-    }
-    newEvent(): HoneyEvent {
-      return {
-        addField: addField || noop,
-        send: send || noop,
-      };
-    }
-  }
-
-  return new DummyHoney({
-    writeKey: 'test',
-    dataset: 'test',
-    disabled: true,
-  });
-}
+import { newDummyHoney } from './dummy-honey';
 
 test('test tracer with no options', t => {
   t.plan(3);
@@ -71,7 +46,7 @@ test('test tracer tags', t => {
   };
   const tracer = new Tracer(
     { serviceName: 'service name' },
-    newDummyHoney(addField),
+    newDummyHoney({ addField }),
   );
   const tags = { key1: 'value1', key2: 'value2' };
   const span = tracer.startSpan('hello', { tags });
