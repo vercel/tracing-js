@@ -1,19 +1,19 @@
 import { SpanContext } from './span-context';
 import * as Tags from './tags';
 import * as Hdrs from './headers';
-import FetchTemp, { Request, RequestInit, Headers } from 'node-fetch';
-type Fetch = typeof FetchTemp;
+import { Request, RequestInit, Headers } from 'node-fetch';
+type Fetch = (url: string | Request, opts?: RequestInit) => void;
 
-interface SetupFetchTracingOptions {
+interface SetupFetchTracingOptions<T> {
   spanContext: SpanContext;
-  fetch?: Fetch;
+  fetch?: T;
 }
 
-export function setupFetchTracing(options: SetupFetchTracingOptions) {
+export function setupFetchTracing<T>(options: SetupFetchTracingOptions<T>): T {
   const { fetch, spanContext } = options;
   let fetchOriginal: Fetch;
   if (fetch) {
-    fetchOriginal = fetch;
+    fetchOriginal = (fetch as unknown) as Fetch;
   } else {
     fetchOriginal = require('node-fetch');
   }
@@ -22,10 +22,8 @@ export function setupFetchTracing(options: SetupFetchTracingOptions) {
     if (!opts) {
       opts = { headers: new Headers() };
     }
-    const headers =
-      opts.headers instanceof Headers
-        ? opts.headers
-        : new Headers(opts.headers as any);
+    const headers = new Headers(opts.headers as any);
+    opts.headers = headers;
 
     const traceId = spanContext.toTraceId();
     const parentId = spanContext.toSpanId();
@@ -42,9 +40,6 @@ export function setupFetchTracing(options: SetupFetchTracingOptions) {
     return fetchOriginal(url, opts);
   };
 
-  fetchTracing.default = fetchTracing;
-  fetchTracing.isRedirect = fetchOriginal.isRedirect;
-
   // TS doesn't know about decorated runtime data
   // so we copy from the original just to be safe.
   for (const key of Object.keys(fetchOriginal)) {
@@ -53,5 +48,7 @@ export function setupFetchTracing(options: SetupFetchTracingOptions) {
     tracing[key] = original[key];
   }
 
-  return fetchTracing;
+  fetchTracing.default = fetchTracing;
+
+  return (fetchTracing as unknown) as T;
 }
