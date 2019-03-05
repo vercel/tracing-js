@@ -7,9 +7,6 @@ interface DummyOptions {
   send?: () => void;
 }
 
-//type AddField  =(key: string, value: any) => void;
-//type Send = () => void;
-
 class DummyHoney extends Libhoney {
   private dummyOptions: DummyOptions;
 
