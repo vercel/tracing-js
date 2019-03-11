@@ -112,7 +112,7 @@ test('test span addField', t => {
         case 'trace.parent_id':
           t.equal(value, parentId);
           break;
-        case 'sample_rate':
+        case 'samplerate':
           t.equal(value, rate);
           break;
       }

@@ -87,7 +87,7 @@ export class Span {
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
-    this.event.addField('sample_rate', sampler ? sampler.getRate() : undefined);
+    this.event.addField('samplerate', sampler ? sampler.getRate() : undefined);
     for (const [key, value] of Object.entries(this.tags)) {
       this.event.addField('tag.' + key, value);
     }
