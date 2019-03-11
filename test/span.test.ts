@@ -78,8 +78,9 @@ test('test span addTags', t => {
 });
 
 test('test span addField', t => {
-  t.plan(8);
-  const options = getTracerOptions(new DeterministicSampler(1));
+  t.plan(9);
+  const rate = 1;
+  const options = getTracerOptions(new DeterministicSampler(rate));
   const name = 'function name';
   const traceId = 'trace123';
   const parentId = 'parent123';
@@ -110,6 +111,9 @@ test('test span addField', t => {
           break;
         case 'trace.parent_id':
           t.equal(value, parentId);
+          break;
+        case 'sample_rate':
+          t.equal(value, rate);
           break;
       }
     },

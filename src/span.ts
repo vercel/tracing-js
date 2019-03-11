@@ -75,6 +75,7 @@ export class Span {
       dc,
       podName,
       nodeName,
+      sampler,
     } = this.tracerOptions;
     this.event.addField('duration_ms', duration);
     this.event.addField('name', this.name);
@@ -86,6 +87,7 @@ export class Span {
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
+    this.event.addField('sample_rate', sampler ? sampler.getRate() : undefined);
     for (const [key, value] of Object.entries(this.tags)) {
       this.event.addField('tag.' + key, value);
     }
