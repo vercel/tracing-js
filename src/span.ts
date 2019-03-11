@@ -3,6 +3,7 @@ import { SpanContext } from './span-context';
 import { generateId } from './generate-id';
 import { SpanTags, TracerOptions } from './shared';
 import { SAMPLING_PRIORITY } from './tags';
+import { SamplerBase } from '.';
 
 export class Span {
   private spanId: string;
@@ -52,22 +53,22 @@ export class Span {
     this.name = name;
   }
 
-  private isSendable() {
+  private isSendable(sampler: SamplerBase) {
     const priority = this.tags[SAMPLING_PRIORITY];
-    const { sampler } = this.tracerOptions;
 
-    if (typeof priority === 'undefined' && sampler) {
+    if (typeof priority === 'undefined') {
       return sampler.sample(this.traceId);
     }
 
     return priority > 0;
   }
 
-  finish() {
-    if (!this.isSendable()) {
-      return;
-    }
+  private getRate(sampler: SamplerBase) {
+    const priority = this.tags[SAMPLING_PRIORITY];
+    return priority > 0 ? 1 : sampler.getRate();
+  }
 
+  finish() {
     const duration = Date.now() - this.start.getTime();
     const {
       serviceName,
@@ -77,6 +78,11 @@ export class Span {
       nodeName,
       sampler,
     } = this.tracerOptions;
+
+    if (!sampler || !this.isSendable(sampler)) {
+      return;
+    }
+
     this.event.addField('duration_ms', duration);
     this.event.addField('name', this.name);
     this.event.addField('service_name', serviceName);
@@ -87,7 +93,7 @@ export class Span {
     this.event.addField('trace.trace_id', this.traceId);
     this.event.addField('trace.span_id', this.spanId);
     this.event.addField('trace.parent_id', this.parentId);
-    this.event.addField('samplerate', sampler ? sampler.getRate() : undefined);
+    this.event.addField('samplerate', this.getRate(sampler));
     for (const [key, value] of Object.entries(this.tags)) {
       this.event.addField('tag.' + key, value);
     }
