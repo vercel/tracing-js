@@ -123,16 +123,14 @@ test('test span addField', t => {
 });
 
 test('test span addField should favor priority over sampler', t => {
-  t.plan(2);
+  t.plan(1);
   const options = getTracerOptions(new DeterministicSampler(20));
   const name = 'function name';
   const traceId = 'trace123';
   const parentId = 'parent123';
   const tags = { [SAMPLING_PRIORITY]: 1 };
   const event: HoneyEvent = {
-    send: () => {
-      t.true(event.timestamp && event.timestamp > new Date(0));
-    },
+    send: noop,
     addField: (key: string, value: any) => {
       switch (key) {
         case 'samplerate':
@@ -143,6 +141,25 @@ test('test span addField should favor priority over sampler', t => {
   };
   const span = new Span(event, options, name, traceId, parentId, tags);
   setTimeout(() => span.finish(), 50);
+});
+
+
+test('test span finish should call send at most once', t => {
+  t.plan(1);
+  const options = getTracerOptions(new DeterministicSampler(20));
+  const name = 'function name';
+  const traceId = 'trace123';
+  const parentId = 'parent123';
+  const tags = { [SAMPLING_PRIORITY]: 1 };
+  const event: HoneyEvent = {
+    send: () => {
+      t.true(true, 'should be called exactly once');
+    },
+    addField: noop
+  };
+  const span = new Span(event, options, name, traceId, parentId, tags);
+  span.finish();
+  span.finish();
 });
 
 test('test span sample rate 0 should not send', t => {
