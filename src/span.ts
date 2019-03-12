@@ -14,6 +14,7 @@ export class Span {
   private parentId: string | undefined;
   private tags: SpanTags;
   private start: Date;
+  private duration: number | undefined;
 
   constructor(
     event: HoneyEvent,
@@ -69,7 +70,10 @@ export class Span {
   }
 
   finish() {
-    const duration = Date.now() - this.start.getTime();
+    if (typeof this.duration !== 'undefined') {
+      return;
+    }
+    this.duration = Date.now() - this.start.getTime();
     const {
       serviceName,
       environment,
@@ -83,7 +87,7 @@ export class Span {
       return;
     }
 
-    this.event.addField('duration_ms', duration);
+    this.event.addField('duration_ms', this.duration);
     this.event.addField('name', this.name);
     this.event.addField('service_name', serviceName);
     this.event.addField('environment', environment);
