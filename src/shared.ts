@@ -22,6 +22,7 @@ export interface SpanOptions {
 
 export interface SamplerBase {
   sample(data: string): boolean;
+  getRate(): number;
 }
 
 export interface HttpRequest {

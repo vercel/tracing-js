@@ -6,6 +6,7 @@ import { SamplerBase } from './shared';
 const MAX_UINT32 = Math.pow(2, 32) - 1;
 
 export class DeterministicSampler implements SamplerBase {
+  private rate: number;
   private upperBound: number;
 
   /**
@@ -24,6 +25,7 @@ export class DeterministicSampler implements SamplerBase {
       rate = 1;
     }
     this.upperBound = (MAX_UINT32 / rate) >>> 0;
+    this.rate = rate;
   }
 
   sample(traceId: string) {
@@ -31,5 +33,9 @@ export class DeterministicSampler implements SamplerBase {
       .update(traceId)
       .digest();
     return sum.readUInt32BE(0) <= this.upperBound;
+  }
+
+  getRate() {
+    return this.rate;
   }
 }

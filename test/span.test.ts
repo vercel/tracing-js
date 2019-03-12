@@ -78,8 +78,9 @@ test('test span addTags', t => {
 });
 
 test('test span addField', t => {
-  t.plan(8);
-  const options = getTracerOptions(new DeterministicSampler(1));
+  t.plan(9);
+  const rate = 1;
+  const options = getTracerOptions(new DeterministicSampler(rate));
   const name = 'function name';
   const traceId = 'trace123';
   const parentId = 'parent123';
@@ -110,6 +111,32 @@ test('test span addField', t => {
           break;
         case 'trace.parent_id':
           t.equal(value, parentId);
+          break;
+        case 'samplerate':
+          t.equal(value, rate);
+          break;
+      }
+    },
+  };
+  const span = new Span(event, options, name, traceId, parentId, tags);
+  setTimeout(() => span.finish(), 50);
+});
+
+test('test span addField should favor priority over sampler', t => {
+  t.plan(2);
+  const options = getTracerOptions(new DeterministicSampler(20));
+  const name = 'function name';
+  const traceId = 'trace123';
+  const parentId = 'parent123';
+  const tags = { [SAMPLING_PRIORITY]: 1 };
+  const event: HoneyEvent = {
+    send: () => {
+      t.true(event.timestamp && event.timestamp > new Date(0));
+    },
+    addField: (key: string, value: any) => {
+      switch (key) {
+        case 'samplerate':
+          t.equal(value, 1);
           break;
       }
     },
