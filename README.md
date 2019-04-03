@@ -29,7 +29,7 @@ You'll need the `traceId` and `parentSpanId` (typically found in `req.headers`).
 ```ts
 const spanContext = new SpanContext(traceId, parentSpanId);
 const childSpan = tracer.startSpan('child', { childOf: spanContext });
-// ...do stuff like normal
+// ...do work here, call function, etc
 childSpan.finish();
 ```
 
