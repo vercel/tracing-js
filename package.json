@@ -9,7 +9,7 @@
     "watch": "tsc --watch",
     "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
     "test": "tape dist/test/**.js",
-    "coverage": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "coverage": "nyc tape dist/test/**.js && nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": "github:zeit/tracing-js",
   "author": "styfle",
