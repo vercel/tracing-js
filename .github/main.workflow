@@ -1,4 +1,4 @@
-workflow "Build and Test: push" {
+workflow "Run All on push" {
   on = "push"
   resolves = ["4. Coverage"]
 }
