@@ -1,4 +1,4 @@
-workflow "Install, Build, Test, Coverage on push" {
+workflow "Run on push" {
   on = "push"
   resolves = ["4. Coverage"]
 }
