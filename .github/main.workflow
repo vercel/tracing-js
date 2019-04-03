@@ -1,21 +1,28 @@
-workflow "Build and Test: push" {
+workflow "Run all on push" {
   on = "push"
-  resolves = ["Test"]
+  resolves = ["4. Coverage"]
 }
 
-action "Install" {
+action "1. Install" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
   args = "install"
 }
 
-action "Build" {
+action "2. Build" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  needs = ["Install"]
+  needs = ["1. Install"]
   args = "run build"
 }
 
-action "Test" {
+action "3. Test" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  needs = ["Build"]
+  needs = ["2. Build"]
   args = "test"
+}
+
+action "4. Coverage" {
+  uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
+  needs = ["3. Test"]
+  secrets = ["CODECOV_TOKEN"]
+  args = "run coverage"
 }
