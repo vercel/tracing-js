@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
-    "test": "tape dist/test/**.js"
+    "test": "tape dist/test/**.js",
+    "codecov": "c8 --check-coverage node dist/test/setup-http.test.js && codecov"
   },
   "repository": "github:zeit/tracing-js",
   "author": "styfle",
@@ -20,6 +21,8 @@
     "@types/node": "^11.9.4",
     "@types/node-fetch": "^2.1.6",
     "@types/tape": "^4.2.33",
+    "c8": "^3.4.0",
+    "codecov": "^3.2.0",
     "node-fetch": "^2.3.0",
     "prettier": "^1.16.4",
     "tape": "^4.10.1",
