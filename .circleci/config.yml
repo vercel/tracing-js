@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  test-linux:
+    docker:
+      - image: circleci/node:10
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Installing dependencies
+          command: yarn install
+      - run:
+          name: Build
+          command: yarn build
+      - run:
+          name: Test Coverage
+          command: yarn test-coverage
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-linux
