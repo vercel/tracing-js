@@ -14,27 +14,27 @@ declare module 'libhoney' {
      */
     dataset: string;
     /**
-     * Sample rate of data. If set, causes us to send 1/sampleRate of events and drop the rest.
+     * (Default 1) Sample rate of data. If set, causes us to send 1/sampleRate of events and drop the rest.
      */
     sampleRate?: number;
     /**
-     * We send a batch to the API when this many outstanding events exist in our event queue.
+     * (Default 50) We send a batch to the API when this many outstanding events exist in our event queue.
      */
     batchSizeTrigger?: number;
     /**
-     * We send a batch to the API after this many milliseconds have passed.
+     * (Default 100) We send a batch to the API after this many milliseconds have passed.
      */
     batchTimeTrigger?: number;
     /**
-     * We process batches concurrently to increase parallelism while sending.
+     * (Default 10) We process batches concurrently to increase parallelism while sending.
      */
     maxConcurrentBatches?: number;
     /**
-     * The maximum number of pending events we allow to accumulate in our sending queue before dropping them.
+     * (Default 10000) The maximum number of pending events we allow to accumulate in our sending queue before dropping them.
      */
     pendingWorkCapacity?: number;
     /**
-     * The maximum number of responses we enqueue before dropping them.
+     * (Default 1000) The maximum number of responses we enqueue before dropping them.
      */
     maxResponseQueueSize?: number;
     /**
@@ -42,7 +42,7 @@ declare module 'libhoney' {
      */
     disabled?: boolean;
     /**
-     * Server host to receive Honeycomb events (Defaults to https://api.honeycomb.io).
+     * (Default "https://api.honeycomb.io/") Server host to receive Honeycomb events (Defaults to https://api.honeycomb.io).
      */
     apiHost?: string;
   }
