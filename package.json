@@ -12,7 +12,7 @@
     "watch": "tsc --watch",
     "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
     "test": "tape dist/test/**.js",
-    "test-coverage": "npx c8 --reporter=lcov npm test && npx codecov"
+    "test-coverage": "npx c8 --reporter=text-lcov npm test && npx codecov"
   },
   "repository": "github:zeit/tracing-js",
   "author": "styfle",
