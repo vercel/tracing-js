@@ -1,3 +1,5 @@
+/// <reference types="../types/libhoney" />
+
 import Libhoney from 'libhoney';
 import { Span } from './span';
 import { SpanContext } from './span-context';

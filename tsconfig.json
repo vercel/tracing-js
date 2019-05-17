@@ -13,11 +13,7 @@
       "outDir": "./dist",
       "types": ["node"],
       "strict": true,
-      "target": "esnext",
-      "typeRoots": [
-        "./types",
-        "./node_modules/@types"
-      ]
+      "target": "esnext"
     },
     "include": ["./src", "./test", "./types", "./examples"]
   }
