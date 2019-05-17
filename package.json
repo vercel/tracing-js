@@ -4,7 +4,8 @@
   "description": "A partial implementation of the Opentracing JavaScript API for honeycomb.io backend",
   "main": "dist/src/index.js",
   "files": [
-    "dist/src/**"
+    "dist/src/**",
+    "dist/types/**"
   ],
   "scripts": {
     "build": "tsc && yarn copy-types",
