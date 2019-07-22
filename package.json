@@ -13,7 +13,7 @@
     "copy-types": "copyfiles -u 1 './types/**/*.d.ts' dist/types",
     "fmt": "prettier --single-quote --bracket-spacing --trailing-comma all --write './{src,test,types,examples}/**/*.ts'",
     "test": "tape dist/test/**.js",
-    "test-coverage": "npx c8 --reporter=lcov tape -r ts-node/register test/**.js && npx codecov"
+    "test-coverage": "npx c8 --reporter=lcov tape -r ts-node/register test/**.ts && npx codecov"
   },
   "repository": "github:zeit/tracing-js",
   "author": "styfle",
