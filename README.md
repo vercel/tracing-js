@@ -1,6 +1,6 @@
 # @zeit/tracing-js 
 
-[![npm](https://badgen.net/npm/v/@zeit/tracing-js)](https://www.npmjs.com/package/@zeit/tracing-js) [![install size](https://badgen.net/packagephobia/install/@zeit/tracing-js)](https://packagephobia.now.sh/result?p=@zeit/tracing-js) [![codecov](https://badgen.net/codecov/c/github/zeit/tracing-js)](https://circleci.com/gh/zeit/workflows/tracing-js)
+[![npm](https://badgen.net/npm/v/@zeit/tracing-js)](https://www.npmjs.com/package/@zeit/tracing-js) [![install size](https://badgen.net/packagephobia/install/@zeit/tracing-js)](https://packagephobia.now.sh/result?p=@zeit/tracing-js) [![circleci](https://badgen.net/circleci/github/zeit/tracing-js)](https://circleci.com/gh/zeit/workflows/tracing-js)
 
 A partial implementation of the [OpenTracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
 
