@@ -1,6 +1,6 @@
 {
   "name": "@vercel/tracing-js",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "A partial implementation of the Opentracing JavaScript API for honeycomb.io backend",
   "main": "dist/src/index.js",
   "files": [
