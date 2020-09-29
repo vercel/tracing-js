@@ -1,6 +1,6 @@
-# @zeit/tracing-js 
+# @vercel/tracing-js 
 
-[![npm](https://badgen.net/npm/v/@zeit/tracing-js)](https://www.npmjs.com/package/@zeit/tracing-js) [![install size](https://badgen.net/packagephobia/install/@zeit/tracing-js)](https://packagephobia.now.sh/result?p=@zeit/tracing-js) [![circleci](https://badgen.net/circleci/github/zeit/tracing-js)](https://circleci.com/gh/zeit/workflows/tracing-js)
+[![npm](https://badgen.net/npm/v/@vercel/tracing-js)](https://www.npmjs.com/package/@vercel/tracing-js) [![install size](https://badgen.net/packagephobia/install/@vercel/tracing-js)](https://packagephobia.now.sh/result?p=@vercel/tracing-js) [![circleci](https://badgen.net/circleci/github/vercel/tracing-js)](https://circleci.com/gh/vercel/workflows/tracing-js)
 
 A partial implementation of the [OpenTracing JavaScript API](https://opentracing-javascript.surge.sh) for [honeycomb.io](https://www.honeycomb.io) backend.
 
@@ -11,7 +11,7 @@ A partial implementation of the [OpenTracing JavaScript API](https://opentracing
 The minimum code you need to get started is the following:
 
 ```ts
-import { Tracer } from '@zeit/tracing-js';
+import { Tracer } from '@vercel/tracing-js';
 const tracer = new Tracer({ serviceName }, { writeKey, dataset });
 const span = tracer.startSpan(spanName);
 functionToTrace();
@@ -55,7 +55,7 @@ We also use a `DeterministicSampler` so that all services will use the same samp
 
 ```ts
 import micro from 'micro';
-import { Tracer, SpanContext, DeterministicSampler } from '@zeit/tracing-js';
+import { Tracer, SpanContext, DeterministicSampler } from '@vercel/tracing-js';
 
 const tracer = new Tracer(
   {
@@ -113,4 +113,4 @@ async function handler(req: IncomingMessage, res: ServerResponse) {
 micro(handler).listen(3000);
 ```
 
-See a complete example of multi-service tracing in the [examples](https://github.com/zeit/tracing-js/tree/master/examples) directory.
+See a complete example of multi-service tracing in the [examples](https://github.com/vercel/tracing-js/tree/master/examples) directory.
